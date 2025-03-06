@@ -1,30 +1,3 @@
-// package main
-
-// import (
-// 	"log"
-
-// 	"github.com/go-rod/rod"
-// )
-
-// func main() {
-// 	// Connect to the default browser instance.
-// 	browser := rod.New().MustConnect()
-
-// 	// Open a new page with the target URL.
-// 	page := browser.MustPage("https://watchwrestling.ae")
-
-// 	// Wait until the page is fully loaded.
-// 	page.MustWaitLoad()
-
-// 	// Capture a screenshot of the page and save it as "example.png".
-// 	err := page.MustScreenshot("watchwrestling.png")
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-
-// 	log.Println("Screenshot saved as youtubewatchwrestling.png")
-// }
-
 package main
 
 import (
