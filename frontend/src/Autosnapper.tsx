@@ -19,6 +19,7 @@ export default function Autosnapper() {
       setErrorMessage("");
       setScreenshot(null);
 
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
       const response = await fetch("http://localhost:8080/api/screenshot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -46,34 +47,106 @@ export default function Autosnapper() {
     }
   };
 
+  // ----------- Styles -----------
+  // Page: full viewport, light background, centered content.
+  const pageStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    width: "100vw",
+    margin: 0,
+    padding: 0,
+    backgroundColor: "#f8f9fa",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif",
+  };
+
+  // Container: responsive full width up to a max, with padding and centered text.
+  const containerStyle: React.CSSProperties = {
+    width: "100%",
+    maxWidth: "1000px", // Allows the container to be wide on larger screens.
+    backgroundColor: "#1e1e1e",
+    borderRadius: "8px",
+    padding: "2rem",
+    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+    textAlign: "center",
+    color: "#ffffff",
+  };
+
+  const headingStyle: React.CSSProperties = {
+    fontSize: "2rem",
+    marginBottom: "0.5rem",
+  };
+
+  const subHeadingStyle: React.CSSProperties = {
+    marginBottom: "1.5rem",
+    color: "#ccc",
+  };
+
+  const formGroupStyle: React.CSSProperties = {
+    marginBottom: "1.5rem",
+    textAlign: "left",
+    maxWidth: "600px",
+    margin: "0 auto 1.5rem", // Center the form group within the container.
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    marginBottom: "0.5rem",
+    fontWeight: 600,
+    color: "#ddd",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "0.75rem",
+    fontSize: "1rem",
+    border: isValidUrl ? "1px solid #ccc" : "1px solid red",
+    borderRadius: "4px",
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    marginTop: "1rem",
+    padding: "0.75rem 1.5rem",
+    backgroundColor: "#007bff",
+    color: "#fff",
+    border: "none",
+    borderRadius: "4px",
+    fontSize: "1rem",
+    cursor: "pointer",
+  };
+
+  const buttonDisabledStyle: React.CSSProperties = {
+    ...buttonStyle,
+    backgroundColor: "#aaa",
+    cursor: "not-allowed",
+  };
+
+  const errorStyle: React.CSSProperties = {
+    color: "red",
+    marginTop: "1rem",
+  };
+
+  const screenshotContainerStyle: React.CSSProperties = {
+    marginTop: "2rem",
+    textAlign: "center",
+  };
+
+  const screenshotStyle: React.CSSProperties = {
+    width: "100%",
+    border: "1px solid #ccc",
+    borderRadius: "4px",
+    marginTop: "1rem",
+  };
+  // -------------------------------
+
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        width: "100vw",
-        margin: 0,
-        padding: 0,
-      }}
-    >
-      <div
-        style={{
-          width: "90%",
-          maxWidth: "400px",
-          border: "1px solid #ccc",
-          padding: "2rem",
-          borderRadius: "8px",
-          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-          textAlign: "center",
-          backgroundColor: "#1e1e1e",
-        }}
-      >
-        <h2>Autosnapper</h2>
-        <p>Enter a URL to capture a screenshot</p>
-        <div style={{ width: "100%", marginBottom: "1rem" }}>
-          <label htmlFor="url" style={{ display: "block", marginBottom: "0.5rem" }}>
+    <div style={pageStyle}>
+      <div style={containerStyle}>
+        <h2 style={headingStyle}>AutoSnapper</h2>
+        <p style={subHeadingStyle}>Enter a URL to capture a screenshot</p>
+        <div style={formGroupStyle}>
+          <label htmlFor="url" style={labelStyle}>
             URL
           </label>
           <input
@@ -81,50 +154,26 @@ export default function Autosnapper() {
             value={url}
             onChange={handleUrlChange}
             placeholder="https://example.com"
-            style={{
-              width: "calc(100% - 12px)", // Adjust for padding and border
-              padding: "6px",
-              border: isValidUrl ? "1px solid #ccc" : "1px solid red",
-              borderRadius: "4px",
-            }}
+            style={inputStyle}
           />
           {!isValidUrl && (
-            <p style={{ color: "red", marginTop: "0.5rem" }}>Please enter a valid URL</p>
+            <p style={{ color: "red", marginTop: "0.5rem" }}>
+              Please enter a valid URL
+            </p>
           )}
         </div>
-
         <button
           onClick={handleCapture}
           disabled={!isValidUrl || !url}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
+          style={!isValidUrl || !url ? buttonDisabledStyle : buttonStyle}
         >
           Capture Screenshot
         </button>
-
-        {errorMessage && <p style={{ color: "red", marginTop: "1rem" }}>{errorMessage}</p>}
-
+        {errorMessage && <p style={errorStyle}>{errorMessage}</p>}
         {screenshot && (
-          <div style={{ marginTop: "1.5rem", width: "100%" }}>
-            <h3>Captured Screenshot</h3>
-            <img
-              src={screenshot}
-              alt="Captured Screenshot"
-              style={{
-                maxWidth: "100%",
-                maxHeight: "600px", // Limit height if needed
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                display: "block",
-                margin: "0 auto", // Center the image
-              }}
-            />
+          <div style={screenshotContainerStyle}>
+            <h3 style={{ marginBottom: "1rem" }}>Captured Screenshot</h3>
+            <img src={screenshot} alt="Captured Screenshot" style={screenshotStyle} />
           </div>
         )}
       </div>
