@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os" // <-- Import os package
+	"os"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
@@ -20,7 +20,7 @@ type ScreenshotResponse struct {
 }
 
 func screenshotHandler(w http.ResponseWriter, r *http.Request) {
-	// Add CORS headers if needed:
+	// Set CORS headers if needed
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
@@ -59,8 +59,8 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/api/screenshot", screenshotHandler)
-
-	// Use the port provided by Render's environment, default to 8080 if not set
+	
+	// Read PORT from environment, default to 8080 for local development.
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
