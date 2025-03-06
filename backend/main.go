@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"os" // <-- Import os package
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
@@ -19,18 +20,14 @@ type ScreenshotResponse struct {
 }
 
 func screenshotHandler(w http.ResponseWriter, r *http.Request) {
-	// --- ADD THESE LINES FOR CORS ---
+	// Add CORS headers if needed:
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-
 	if r.Method == http.MethodOptions {
-		// Preflight request; nothing else to do
 		return
 	}
-	// --------------------------------
 
-	// Parse JSON from request body
 	var req ScreenshotRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Bad request: unable to parse JSON", http.StatusBadRequest)
@@ -42,20 +39,17 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use Rod to capture the screenshot
 	browser := rod.New().MustConnect()
 	defer browser.MustClose()
 
 	page := browser.MustPage(req.URL).MustWaitLoad()
 
-	// Capture a full-page screenshot
 	imgBytes, err := page.Screenshot(true, &proto.PageCaptureScreenshot{})
 	if err != nil {
 		http.Error(w, "Failed to capture screenshot", http.StatusInternalServerError)
 		return
 	}
 
-	// Encode screenshot bytes to base64
 	encoded := base64.StdEncoding.EncodeToString(imgBytes)
 	resp := ScreenshotResponse{ImageData: encoded}
 
@@ -66,6 +60,11 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/api/screenshot", screenshotHandler)
 
-	log.Println("Server is running on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// Use the port provided by Render's environment, default to 8080 if not set
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	log.Println("Server is running on port:", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
