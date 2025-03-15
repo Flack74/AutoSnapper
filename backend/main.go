@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/proto"
 )
 
 type ScreenshotRequest struct {
