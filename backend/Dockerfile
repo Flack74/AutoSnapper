@@ -4,12 +4,15 @@ FROM golang:1.24-bullseye AS builder
 # Set working directory inside the container
 WORKDIR /app
 
-# Copy Go module files and download dependencies (optimizing Docker cache usage)
+# Copy Go module files and download dependencies
 COPY go.mod go.sum ./
-RUN go mod download
+RUN go mod tidy && go mod download
 
 # Copy the application source code
 COPY . .
+
+# Ensure proto files are compiled if needed
+RUN go generate ./...
 
 # Build the Go binary (static binary for minimal dependencies)
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o autosnapper .
@@ -17,7 +20,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o autosnapper .
 # Final stage: Minimal Debian-based image for runtime
 FROM debian:bullseye-slim
 
-# Install only required libraries for Chromium to run (avoiding unnecessary bloat)
+# Install only required libraries for Chromium to run
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libasound2 \
     libatk-bridge2.0-0 \
@@ -34,7 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxrandr2 \
     libgbm1 \
     xdg-utils \
- && rm -rf /var/lib/apt/lists/*  # Reduce image size by cleaning up
+ && rm -rf /var/lib/apt/lists/*  # Reduce image size
 
 # Set working directory for runtime
 WORKDIR /root/
@@ -48,5 +51,5 @@ RUN chmod +x autosnapper
 # Expose port 8080 (Render uses PORT env variable)
 EXPOSE 8080
 
-# Run the application, ensuring it respects the PORT variable
+# Run the application
 CMD ["sh", "-c", "./autosnapper --port=${PORT:-8080}"]
