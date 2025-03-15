@@ -6,11 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/proto"
 )
 
+// Structs for request & response
 type ScreenshotRequest struct {
 	URL string `json:"url"`
 }
@@ -19,20 +22,34 @@ type ScreenshotResponse struct {
 	ImageData string `json:"imageData"`
 }
 
+// Global browser instance (singleton)
+var browser *rod.Browser
+var once sync.Once
+
+// Initialize browser with optimized settings
+func getBrowser() *rod.Browser {
+	once.Do(func() {
+		os.Setenv("ROD_BROWSER_BIN", "/usr/bin/google-chrome") // Ensure Chrome is found
+		browser = rod.New().ControlURL("ws://127.0.0.1:9222").MustConnect()
+	})
+	return browser
+}
+
+// Screenshot handler
 func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 	// CORS Headers
-	w.Header().Set("Access-Control-Allow-Origin", "https://autosnapper-1.onrender.com") // Allow only your frontend
+	w.Header().Set("Access-Control-Allow-Origin", "https://autosnapper-1.onrender.com")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
 	// Parse JSON request
 	var req ScreenshotRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Println("Error decoding JSON:", err)
 		http.Error(w, "Bad request: unable to parse JSON", http.StatusBadRequest)
 		return
 	}
@@ -42,22 +59,25 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use Rod to capture the screenshot
-	os.Setenv("ROD_BROWSER_BIN", "/usr/bin/google-chrome") // Ensure Chrome is found
-	browser := rod.New().MustConnect()
-	defer browser.MustClose()
+	// Use singleton browser instance
+	browser := getBrowser()
 
+	// Open page with timeout (avoids memory leaks)
 	page, err := browser.Page(proto.TargetCreateTarget{URL: req.URL})
 	if err != nil {
-		log.Println("Failed to load page:", err)
 		http.Error(w, "Failed to load page", http.StatusInternalServerError)
 		return
 	}
-	page.MustWaitLoad()
+	defer page.Close()
 
-	imgBytes, err := page.Screenshot(true, &proto.PageCaptureScreenshot{})
+	page.Timeout(10 * time.Second).MustWaitLoad() // Wait with timeout
+
+	// Capture optimized screenshot (JPEG, lower quality)
+	imgBytes, err := page.Screenshot(false, &proto.PageCaptureScreenshot{
+		Format:  proto.PageCaptureScreenshotFormatJpeg, // Use JPEG for lower memory usage
+		Quality: proto.Int(70),                         // Reduce quality to save memory
+	})
 	if err != nil {
-		log.Println("Screenshot error:", err)
 		http.Error(w, "Failed to capture screenshot", http.StatusInternalServerError)
 		return
 	}
@@ -70,6 +90,7 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// Root handler
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
@@ -91,7 +112,17 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
   `))
 }
 
+// Main function
 func main() {
+	// Start headless Chrome in background (low-memory mode)
+	go func() {
+		log.Println("Launching Chrome...")
+		os.Setenv("ROD_HEADLESS", "1")
+		os.Setenv("ROD_DEVTOOLS", "false")
+		getBrowser()
+	}()
+
+	// HTTP Handlers
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/api/screenshot", screenshotHandler)
 
