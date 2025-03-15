@@ -75,7 +75,7 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 	// Capture optimized screenshot (JPEG, lower quality)
 	imgBytes, err := page.Screenshot(false, &proto.PageCaptureScreenshot{
 		Format:  proto.PageCaptureScreenshotFormatJpeg, // Use JPEG for lower memory usage
-		Quality: proto.Int(70),                         // Reduce quality to save memory
+		Quality: proto.Int64(70),                        // Use Int64 instead of Int
 	})
 	if err != nil {
 		http.Error(w, "Failed to capture screenshot", http.StatusInternalServerError)
