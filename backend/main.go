@@ -20,17 +20,19 @@ type ScreenshotResponse struct {
 }
 
 func screenshotHandler(w http.ResponseWriter, r *http.Request) {
-	// CORS headers for cross-domain requests
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+	// CORS Headers
+	w.Header().Set("Access-Control-Allow-Origin", "https://autosnapper-1.onrender.com") // Allow only your frontend
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
 	if r.Method == http.MethodOptions {
 		return
 	}
 
+	// Parse JSON request
 	var req ScreenshotRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Println("Error decoding JSON:", err)
 		http.Error(w, "Bad request: unable to parse JSON", http.StatusBadRequest)
 		return
 	}
@@ -41,13 +43,21 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Use Rod to capture the screenshot
+	os.Setenv("ROD_BROWSER_BIN", "/usr/bin/google-chrome") // Ensure Chrome is found
 	browser := rod.New().MustConnect()
 	defer browser.MustClose()
 
-	page := browser.MustPage(req.URL).MustWaitLoad()
+	page, err := browser.Page(proto.TargetCreateTarget{URL: req.URL})
+	if err != nil {
+		log.Println("Failed to load page:", err)
+		http.Error(w, "Failed to load page", http.StatusInternalServerError)
+		return
+	}
+	page.MustWaitLoad()
 
 	imgBytes, err := page.Screenshot(true, &proto.PageCaptureScreenshot{})
 	if err != nil {
+		log.Println("Screenshot error:", err)
 		http.Error(w, "Failed to capture screenshot", http.StatusInternalServerError)
 		return
 	}
@@ -55,6 +65,7 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 	encoded := base64.StdEncoding.EncodeToString(imgBytes)
 	resp := ScreenshotResponse{ImageData: encoded}
 
+	// Return JSON response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
@@ -84,7 +95,7 @@ func main() {
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/api/screenshot", screenshotHandler)
 
-	// Bind to the port from the PORT environment variable; default to 8080
+	// Bind to port from environment variable, default to 8080
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
