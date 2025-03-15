@@ -19,7 +19,7 @@ export default function Autosnapper() {
       setErrorMessage("");
       setScreenshot(null);
 
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080";
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://autosnapper.onrender.com/";
       const response = await fetch("https://autosnapper.onrender.com/api/screenshot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
