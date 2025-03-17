@@ -85,7 +85,7 @@ AUTOSNAPPER/
    ```bash
    npm run dev
    ```
-   The React app will typically be available at **[http://localhost:5173](http://localhost:5173)**.
+   The React app will typically be available at **[http://localhost:5173](http://localhost:80)**.
 
 ---
 
@@ -101,7 +101,7 @@ AUTOSNAPPER/
    cd frontend
    npm run dev
    ```
-3. **Open your browser** and go to **[http://localhost:5173](http://localhost:5173)**. 
+3. **Open your browser** and go to **[http://localhost:5173](http://localhost:80)**. 
 
 You should see the AutoSnapper UI. When you enter a URL (e.g., `https://example.com`) and click “Capture Screenshot,” the request goes to **http://localhost:8080** where the Go backend captures a screenshot and returns it to the frontend.
 
