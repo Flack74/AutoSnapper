@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
+
 	"net/http"
 	"os"
 	"time"
@@ -164,7 +164,7 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			logger.WithError(err).Warn("Failed to cache screenshot")
 		}
-		
+
 		// Store in history (keep last 10 items)
 		historyItem := HistoryItem{
 			URL:       req.URL,
