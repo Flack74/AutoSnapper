@@ -14,8 +14,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o autosnapper .
 # Final stage: use a minimal Debian-based image for the final container
 FROM debian:bullseye-slim
 
-# Install necessary libraries for Chromium to run, including libgbm1 and curl for health checks
+# Install Chrome and necessary libraries
 RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    curl \
     fonts-liberation \
     libappindicator3-1 \
     libasound2 \
@@ -33,7 +36,10 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 \
     libgbm1 \
     xdg-utils \
-    curl \
+ && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+ && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+ && apt-get update \
+ && apt-get install -y google-chrome-stable \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/
