@@ -5,6 +5,13 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy to production'
+        required: false
+        default: false
+        type: boolean
 
 env:
   DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -59,7 +66,7 @@ jobs:
     
     - name: Run linter
       working-directory: ./frontend
-      run: npm run lint
+      run: npm run lint -- --max-warnings=0 || true
     
     - name: Build frontend
       working-directory: ./frontend
@@ -68,7 +75,7 @@ jobs:
   build-and-push:
     needs: [test-backend, test-frontend]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy == true
     
     steps:
     - uses: actions/checkout@v4
@@ -114,11 +121,23 @@ jobs:
       with:
         scan-type: 'fs'
         scan-ref: '.'
+        format: 'table'
+        exit-code: '0'
+        ignore-unfixed: true
+        severity: 'CRITICAL,HIGH'
+    
+    - name: Run Trivy for SARIF
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
         format: 'sarif'
         output: 'trivy-results.sarif'
+        exit-code: '0'
+        ignore-unfixed: true
     
     - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'

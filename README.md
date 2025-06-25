@@ -24,11 +24,11 @@
 This project showcases **production-grade DevOps practices** suitable for enterprise environments:
 
 ### 🔄 **CI/CD & Automation**
-- **GitHub Actions Pipeline** - Automated testing, building, and deployment
+- **GitHub Actions Pipeline** - Automated testing with manual deployment control
 - **Multi-stage Docker Builds** - Optimized container images with security scanning
 - **Automated Testing** - Unit tests, integration tests, and health checks
-- **Security Scanning** - Trivy vulnerability scanning in CI pipeline
-- **Deployment Automation** - One-click deployment scripts
+- **Security Scanning** - Non-blocking Trivy vulnerability scanning in CI pipeline
+- **Manual Deployment** - Controlled production deployments via workflow dispatch
 
 ### 🏗️ **Infrastructure as Code (IaC)**
 - **Terraform Configuration** - Complete AWS infrastructure provisioning
@@ -231,6 +231,13 @@ docker-compose up --build
 ---
 
 ## ☁️ Production Deployment
+
+### **Manual Deployment via GitHub Actions**
+1. Go to **Actions** tab in your GitHub repository
+2. Select **CI/CD Pipeline** workflow
+3. Click **Run workflow**
+4. Check **Deploy to production** option
+5. Click **Run workflow** to deploy
 
 ### **AWS Deployment (Terraform)**
 ```bash
