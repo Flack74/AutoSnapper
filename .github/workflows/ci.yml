@@ -66,7 +66,7 @@ jobs:
     
     - name: Run linter
       working-directory: ./frontend
-      run: npm run lint -- --max-warnings=0 || true
+      run: npm run lint || true
     
     - name: Build frontend
       working-directory: ./frontend
@@ -75,7 +75,7 @@ jobs:
   build-and-push:
     needs: [test-backend, test-frontend]
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && inputs.deploy == true
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
     
     steps:
     - uses: actions/checkout@v4
