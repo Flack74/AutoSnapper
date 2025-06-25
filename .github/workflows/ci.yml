@@ -75,7 +75,6 @@ jobs:
   build-and-push:
     needs: [test-backend, test-frontend]
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true'
     
     steps:
     - uses: actions/checkout@v4
