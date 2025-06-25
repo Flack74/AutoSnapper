@@ -150,7 +150,7 @@ graph TB
 - **Go 1.24** - High-performance HTTP server with REST API
 - **Redis** - Distributed caching + history storage
 - **Logrus** - Structured JSON logging with request tracing
-- **Rod** - Headless browser automation for screenshots
+- **ChromeDP** - Memory-optimized headless browser for screenshots
 
 ### **Frontend**
 - **React 19** - Modern UI framework with hooks and state management
@@ -175,8 +175,7 @@ graph TB
 ```
 AutoSnapper/
 ├── .github/workflows/          # CI/CD Pipeline
-│   ├── ci.yml                 # Build, test, security scan
-│   └── deploy.yml             # Automated deployment
+│   └── ci-cd.yml              # Build, test, security scan, and image push
 ├── backend/                   # Go microservice
 │   ├── Dockerfile            # Multi-stage container build
 │   ├── main.go              # Production-ready server
@@ -232,12 +231,29 @@ docker-compose up --build
 
 ## ☁️ Production Deployment
 
-### **Manual Deployment via GitHub Actions**
-1. Go to **Actions** tab in your GitHub repository
-2. Select **CI/CD Pipeline** workflow
-3. Click **Run workflow**
-4. Check **Deploy to production** option
-5. Click **Run workflow** to deploy
+### **Render Deployment**
+1. Create a Render account at render.com
+2. Connect your GitHub repository
+3. Create a web service for the backend:
+   - Name: AutoSnapper-Backend
+   - Environment: Docker
+   - Branch: main
+   - Root Directory: backend
+   - Environment Variables: Set REDIS_URL and CORS_ORIGIN
+4. Create a static site for the frontend:
+   - Name: AutoSnapper-Frontend
+   - Branch: main
+   - Root Directory: frontend
+   - Build Command: npm run build
+   - Publish Directory: dist
+   - Environment Variables: Set VITE_BACKEND_URL
+5. Enable auto-deploy for both services
+
+### **CI/CD with GitHub Actions & Render**
+1. Push changes to your GitHub repository
+2. GitHub Actions automatically runs tests and security scans
+3. GitHub Actions builds and pushes Docker images to Docker Hub
+4. Render automatically detects the changes and deploys your services
 
 ### **AWS Deployment (Terraform)**
 ```bash
@@ -250,7 +266,11 @@ export AWS_REGION=us-east-1
 ```
 
 ### **Alternative Cloud Platforms**
-- **Render:** Connect GitHub repo, set environment variables
+- **Render:** 
+  1. Create a web service for backend (Docker runtime)
+  2. Create a static site for frontend
+  3. Set environment variables (see below)
+  4. Enable auto-deploy from GitHub
 - **Railway:** `railway up` after login
 - **Fly.io:** `fly launch` in each service directory
 
@@ -260,9 +280,10 @@ export AWS_REGION=us-east-1
 REDIS_URL=redis://your-redis-url:6379
 LOG_LEVEL=info
 PORT=8080
+CORS_ORIGIN=https://your-frontend-url.onrender.com
 
 # Frontend
-VITE_BACKEND_URL=https://your-backend-url
+VITE_BACKEND_URL=https://your-backend-url.onrender.com
 ```
 
 ---
@@ -388,7 +409,8 @@ docker-compose -f docker-compose.test.yml up --abort-on-container-exit
 | Redis connection failed | Check `REDIS_URL` environment variable |
 | Docker build errors | Run `docker system prune -a` to clear cache |
 | Health check failures | Verify service dependencies with `docker-compose logs` |
-| CORS errors | Backend automatically handles CORS headers |
+| CORS errors | Ensure `CORS_ORIGIN` is set to your frontend URL |
+| Memory issues with headless browser | The backend uses memory-optimized ChromeDP settings for Render's free tier |
 
 ### **Debug Commands**
 ```bash

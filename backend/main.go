@@ -10,8 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-rod/rod"
-	"github.com/go-rod/rod/lib/proto"
+	"github.com/chromedp/chromedp"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 )
@@ -49,8 +48,14 @@ var (
 func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
+	// Get CORS origin from environment or default to *
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "*"
+	}
+
 	// CORS headers for cross-domain requests
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", corsOrigin)
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 
@@ -92,13 +97,56 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Use Rod to capture the screenshot
-	browser := rod.New().MustConnect()
-	defer browser.MustClose()
+	// Create a timeout context for the screenshot operation
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
-	page := browser.MustPage(req.URL).MustWaitLoad()
+	// Setup chromedp with memory-optimized options
+	opts := append(chromedp.DefaultExecAllocatorOptions[:],
+		chromedp.DisableGPU,
+		chromedp.Flag("disable-extensions", true),
+		chromedp.Flag("disable-sync", true),
+		chromedp.Flag("disable-background-networking", true),
+		chromedp.Flag("disable-default-apps", true),
+		chromedp.Flag("disable-translate", true),
+		chromedp.Flag("disable-notifications", true),
+		chromedp.Flag("disable-background-timer-throttling", true),
+		chromedp.Flag("disable-site-isolation-trials", true),
+		chromedp.Flag("disable-features", "site-per-process,TranslateUI"),
+		chromedp.Flag("disable-hang-monitor", true),
+		chromedp.Flag("disable-ipc-flooding-protection", true),
+		chromedp.Flag("disable-client-side-phishing-detection", true),
+		chromedp.Flag("disable-popup-blocking", true),
+		chromedp.Flag("disable-prompt-on-repost", true),
+		chromedp.Flag("disable-domain-reliability", true),
+		chromedp.Flag("disable-print-preview", true),
+		chromedp.Flag("disable-speech-api", true),
+		chromedp.Flag("disable-breakpad", true),
+		chromedp.Flag("disable-backing-store-limit", true),
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("headless", true),
+		chromedp.Flag("hide-scrollbars", true),
+		chromedp.Flag("mute-audio", true),
+		chromedp.Flag("window-size", "1280,1024"),
+		chromedp.Flag("disable-dev-shm-usage", true),
+	)
 
-	imgBytes, err := page.Screenshot(true, &proto.PageCaptureScreenshot{})
+	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
+	defer cancel()
+
+	// Create a new browser context
+	browserCtx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(logger.Debugf))
+	defer cancel()
+
+	// Capture screenshot
+	var imgBytes []byte
+	err := chromedp.Run(browserCtx,
+		chromedp.Navigate(req.URL),
+		chromedp.WaitReady("body", chromedp.ByQuery),
+		chromedp.Sleep(2*time.Second), // Give page time to render
+		chromedp.FullScreenshot(&imgBytes, 90),
+	)
+
 	if err != nil {
 		logger.WithError(err).WithField("url", req.URL).Error("Failed to capture screenshot")
 		http.Error(w, "Failed to capture screenshot", http.StatusInternalServerError)
@@ -233,7 +281,13 @@ func initLogger() {
 }
 
 func historyHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// Get CORS origin from environment or default to *
+	corsOrigin := os.Getenv("CORS_ORIGIN")
+	if corsOrigin == "" {
+		corsOrigin = "*"
+	}
+
+	w.Header().Set("Access-Control-Allow-Origin", corsOrigin)
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
 
