@@ -38,6 +38,9 @@ func TestHealthHandler(t *testing.T) {
 func TestScreenshotHandlerBadRequest(t *testing.T) {
 	initLogger()
 	
+	// Mock environment variables for test
+	t.Setenv("CORS_ORIGIN", "*")
+	
 	// Test with empty body
 	req, err := http.NewRequest("POST", "/api/screenshot", bytes.NewBuffer([]byte("{}")))
 	if err != nil {
@@ -73,6 +76,9 @@ func TestGenerateCacheKey(t *testing.T) {
 
 func TestHistoryHandler(t *testing.T) {
 	initLogger()
+	
+	// Mock environment variables for test
+	t.Setenv("CORS_ORIGIN", "*")
 	
 	req, err := http.NewRequest("GET", "/api/history", nil)
 	if err != nil {

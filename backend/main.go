@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -135,7 +136,9 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	// Create a new browser context
-	browserCtx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(logger.Debugf))
+	browserCtx, cancel := chromedp.NewContext(allocCtx, chromedp.WithLogf(func(format string, args ...interface{}) {
+		logger.Debugf(format, args...)
+	}))
 	defer cancel()
 
 	// Capture screenshot
