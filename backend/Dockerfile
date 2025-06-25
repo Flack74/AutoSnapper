@@ -1,5 +1,3 @@
-# backend/Dockerfile
-
 # Use a Debian-based Go image (using bullseye instead of buster)
 FROM golang:1.24-bullseye AS builder
 
@@ -16,7 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o autosnapper .
 # Final stage: use a minimal Debian-based image for the final container
 FROM debian:bullseye-slim
 
-# Install necessary libraries for Chromium to run, including libgbm1
+# Install necessary libraries for Chromium to run, including libgbm1 and curl for health checks
 RUN apt-get update && apt-get install -y \
     fonts-liberation \
     libappindicator3-1 \
@@ -35,6 +33,7 @@ RUN apt-get update && apt-get install -y \
     libxrandr2 \
     libgbm1 \
     xdg-utils \
+    curl \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/

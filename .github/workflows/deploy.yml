@@ -1,0 +1,44 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Render
+      run: |
+        curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}" \
+          -H "Content-Type: application/json" \
+          -d '{"ref": "main"}'
+      if: secrets.RENDER_DEPLOY_HOOK_URL
+    
+    - name: Health Check
+      run: |
+        sleep 60  # Wait for deployment
+        curl -f ${{ secrets.PRODUCTION_URL }}/health || exit 1
+      if: secrets.PRODUCTION_URL
+
+  notify:
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Notify deployment status
+      run: |
+        if [ "${{ needs.deploy.result }}" == "success" ]; then
+          echo "✅ Deployment successful!"
+        else
+          echo "❌ Deployment failed!"
+          exit 1
+        fi
