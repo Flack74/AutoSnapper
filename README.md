@@ -82,8 +82,6 @@ graph TB
 
 ## 📷 Application Screenshots
 
-> **📝 Note:** Add your screenshots to the `/screenshots/` directory with the exact filenames shown below.
-
 ### **Frontend Interface - Royal Black & Red Theme**
 
 #### **Main Capture Page**
@@ -375,8 +373,6 @@ MIT License - see LICENSE file for details.
 5. Submit a pull request
 
 ---
-
-**Built with ❤️ by [Your Name] | Showcasing Production DevOps Practices**vices
 
 ### **CI/CD with GitHub Actions & Render**
 1. Push changes to your GitHub repository
