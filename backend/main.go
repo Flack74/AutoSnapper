@@ -6,8 +6,10 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/chromedp/chromedp"
@@ -44,6 +46,16 @@ var (
 	rdb    *redis.Client
 	logger *logrus.Logger
 )
+
+type filteredWriter struct{}
+
+func (fw *filteredWriter) Write(p []byte) (n int, err error) {
+	msg := string(p)
+	if strings.Contains(msg, "could not unmarshal event") && strings.Contains(msg, "cookiePart") {
+		return len(p), nil
+	}
+	return os.Stderr.Write(p)
+}
 
 func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
@@ -290,6 +302,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	log.SetOutput(&filteredWriter{})
 	initLogger()
 	initRedis()
 
