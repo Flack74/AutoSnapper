@@ -1,7 +1,6 @@
-# AutoSnapper 📸 | Production-Ready DevOps Showcase
+# AutoSnapper 📸
 
-> **A full-stack screenshot service demonstrating enterprise DevOps practices and cloud-native architecture**
-
+**A full-stack screenshot service demonstrating enterprise DevOps practices and cloud-native architecture**
 
 ---
 
