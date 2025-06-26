@@ -51,7 +51,8 @@ type filteredWriter struct{}
 
 func (fw *filteredWriter) Write(p []byte) (n int, err error) {
 	msg := string(p)
-	if strings.Contains(msg, "could not unmarshal event") && strings.Contains(msg, "cookiePart") {
+	if strings.Contains(msg, "could not unmarshal event") && 
+	   (strings.Contains(msg, "cookiePart") || strings.Contains(msg, "ClientNavigationReason")) {
 		return len(p), nil
 	}
 	return os.Stderr.Write(p)
@@ -105,7 +106,7 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
@@ -114,6 +115,11 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 		chromedp.Flag("no-sandbox", true),
 		chromedp.Flag("headless", true),
 		chromedp.Flag("disable-dev-shm-usage", true),
+		chromedp.Flag("disable-web-security", true),
+		chromedp.Flag("disable-features", "VizDisplayCompositor"),
+		chromedp.Flag("disable-background-timer-throttling", true),
+		chromedp.Flag("disable-renderer-backgrounding", true),
+		chromedp.Flag("disable-backgrounding-occluded-windows", true),
 	)
 
 	allocCtx, cancel := chromedp.NewExecAllocator(ctx, opts...)
@@ -126,7 +132,7 @@ func screenshotHandler(w http.ResponseWriter, r *http.Request) {
 	err := chromedp.Run(browserCtx,
 		chromedp.Navigate(req.URL),
 		chromedp.WaitReady("body", chromedp.ByQuery),
-		chromedp.Sleep(2*time.Second),
+		chromedp.Sleep(5*time.Second),
 		chromedp.FullScreenshot(&imgBytes, 90),
 	)
 
