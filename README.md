@@ -10,7 +10,7 @@
 ### **Core Features**
 - **👑 Royal Black & Red Theme:** Luxurious minimalist design with premium glass-morphism effects
 - **📸 Automated Screenshot Capture:** Fast full-page screenshots using headless browser automation with 60s timeout
-- **🌐 Complex Site Support:** Optimized for modern websites including GitHub, Wikipedia, and JavaScript-heavy applications
+- **🌐 Complex Site Support:** Optimized for modern websites, JavaScript-heavy applications
 - **⚡ Redis Caching:** Intelligent caching system for improved performance (1-hour TTL)
 - **📚 Screenshot History:** View and reuse last 3 captured screenshots with timestamps
 - **💾 Download & Copy:** One-click download as PNG or copy image to clipboard
