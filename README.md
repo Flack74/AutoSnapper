@@ -126,23 +126,6 @@ graph TB
 }
 ```
 
-### **📸 Screenshot Requirements**
-
-**Required Files in `/screenshots/` directory:**
-- `main-page-before.png` - Main capture page with royal theme (before URL input)
-- `main-page-after.png` - Result page showing download/copy buttons and shortened URL
-- `history-page.png` - History tab with glass-morphism cards and cached screenshots
-- `backend-health.png` - Health check endpoint JSON response
-
-**Guidelines:**
-- **Resolution:** 1920x1080 or similar high resolution
-- **Format:** PNG for best quality
-- **Content:** Show royal black & red theme clearly
-- **Features:** Demonstrate download/copy buttons, URL shortening, cache indicators
-- **Size:** Keep under 2MB each for fast loading
-
----
-
 ## 🚀 Performance & Compatibility
 
 ### **Screenshot Engine Improvements**
