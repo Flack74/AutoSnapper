@@ -86,21 +86,21 @@ graph TB
 #### **Main Capture Page**
 
 **Before Capture - Clean Interface**
-![Main Page - Before Capture](screenshots/main-page-before.png)
+![image](https://github.com/user-attachments/assets/0aa8197c-98fb-4892-a80e-a3b47e77473b)
 *Luxury black & red theme with elegant input form and royal styling*
 
 **After Capture - Full Functionality**
-![Main Page - After Capture](screenshots/main-page-after.png)
+![image](https://github.com/user-attachments/assets/92f7d88e-544d-42ca-a254-7a737592b054)
 *Screenshot result with download/copy buttons, cache indicator, and shortened URL display*
 
 #### **History Page - Cached Screenshots**
-![History Page](screenshots/history-page.png)
+![image](https://github.com/user-attachments/assets/54c7ebfe-886d-4b49-8574-e7ec419bff67)
 *Premium grid layout with glass-morphism cards, hover effects, and click-to-reuse functionality*
 
 ### **Backend API Interface**
 
 #### **Health Check Endpoint**
-![Backend Health Check](screenshots/backend-health.png)
+![image](https://github.com/user-attachments/assets/36c94658-5f69-44d3-ba30-cb6ea52ce2f5)
 *Production-ready monitoring showing service status and Redis connectivity*
 
 ### **API Response Examples**
