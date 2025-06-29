@@ -196,11 +196,7 @@ AutoSnapper/
 │   ├── variables.tf        # Environment configuration
 │   ├── outputs.tf          # Infrastructure outputs
 │   └── ecs.tf              # Container orchestration
-├── scripts/                # Automation scripts
-│   ├── deploy.sh          # Production deployment
-│   └── local-dev.sh       # Development environment
 ├── docker-compose.yaml    # Local development stack
-└── docker-compose.test.yml # Integration testing
 ```
 
 ---
